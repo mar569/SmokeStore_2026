@@ -27,15 +27,13 @@ const Footer = () => {
               <Link to="/catalog?category=hookahs" className="block hover:text-primary transition-colors">
                 Кальяны
               </Link>
-              <Link to="/catalog?category=hookah-tobacco" className="block hover:text-primary transition-colors">
+              <Link to="/catalog?category=tobacco" className="block hover:text-primary transition-colors">
                 Табак для кальяна
               </Link>
               <Link to="/catalog?category=vapes" className="block hover:text-primary transition-colors">
                 Вейпы
               </Link>
-              <Link to="/catalog?category=e-cigarettes" className="block hover:text-primary transition-colors">
-                Электронные сигареты
-              </Link>
+
               <Link to="/catalog?category=accessories" className="block hover:text-primary transition-colors">
                 Аксессуары
               </Link>

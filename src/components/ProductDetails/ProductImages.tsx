@@ -1,39 +1,41 @@
-// ProductImages.tsx (обновленный код с логикой отображения первого изображения варианта)
-
-import { useState } from 'react';
+import { useState, useMemo } from 'react'; // Добавлен useMemo
 import { motion } from 'framer-motion';
 import { ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ProductVariant } from '@/hooks/useProducts';  // Добавлен импорт
+import { ProductVariant } from '@/hooks/useProducts';
+import { memo } from 'react'; // Добавлен memo
 
 interface ProductImagesProps {
     images: any[];
     productName: string;
-    selectedVariant?: ProductVariant | null;  // Новое: выбранный вариант
-    productVariants?: ProductVariant[];  // Новое: все варианты продукта
+    selectedVariant?: ProductVariant | null;
+    productVariants?: ProductVariant[];
 }
 
-export default function ProductImages({ images, productName, selectedVariant, productVariants }: ProductImagesProps) {
+const ProductImages = memo(function ProductImages({ images, productName, selectedVariant, productVariants }: ProductImagesProps) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+
+    const displayImages = useMemo(() => {
+        const firstVariantImage = productVariants?.[0]?.image_url;
+        return selectedVariant?.image_url
+            ? [{ url: selectedVariant.image_url }]
+            : firstVariantImage
+                ? [{ url: firstVariantImage }]
+                : images;
+    }, [selectedVariant, productVariants, images]);
+
     const goToPrev = () => {
-        setSelectedImageIndex((prev) => (prev - 1 + (images?.length || 1)) % (images?.length || 1));
+        setSelectedImageIndex((prev) => (prev - 1 + (displayImages?.length || 1)) % (displayImages?.length || 1));
     };
 
     const goToNext = () => {
-        setSelectedImageIndex((prev) => (prev + 1) % (images?.length || 1));
+        setSelectedImageIndex((prev) => (prev + 1) % (displayImages?.length || 1));
     };
 
     const goToSlide = (index: number) => {
         setSelectedImageIndex(index);
     };
 
-    // Логика: если выбран вариант с image_url, используем его; иначе — изображение первого варианта, если есть; иначе — основные изображения
-    const firstVariantImage = productVariants?.[0]?.image_url;
-    const displayImages = selectedVariant?.image_url
-        ? [{ url: selectedVariant.image_url }]
-        : firstVariantImage
-            ? [{ url: firstVariantImage }]
-            : images;
     const currentImage = displayImages?.[selectedImageIndex];
 
     return (
@@ -55,6 +57,7 @@ export default function ProductImages({ images, productName, selectedVariant, pr
                                     src={image.url}
                                     alt={image.alt_text || productName}
                                     className="w-full h-full object-cover"
+                                    loading="lazy" // Lazy loading для производительности
                                 />
                             </div>
                         ))}
@@ -94,6 +97,7 @@ export default function ProductImages({ images, productName, selectedVariant, pr
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
+                            loading="lazy" // Lazy loading
                         />
                     ) : (
                         <div className="flex h-full items-center justify-center">
@@ -104,4 +108,6 @@ export default function ProductImages({ images, productName, selectedVariant, pr
             )}
         </motion.div>
     );
-}
+});
+
+export default ProductImages;

@@ -1,5 +1,5 @@
-// ProductDetail.tsx (обновленный с использованием FlaskDisplay и BowlDisplay)
-import { useState, useEffect } from 'react';
+// ProductDetail.tsx (исправленный: убран brandId, так как он не поддерживается в useProducts; исправлена опечатка в типе)
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -7,15 +7,15 @@ import SearchModal from '@/components/SearchModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { useProduct, Product, ProductVariant } from '@/hooks/useProducts';
+import { useProduct, Product, ProductVariant, useProducts } from '@/hooks/useProducts';
 import { useProductImages } from '@/hooks/useProductImages';
 
 import {
   TobaccoDisplay,
   HookahDisplay,
   CoalDisplay,
-  FlaskDisplay, // Заменили ColbaDisplay на FlaskDisplay
-  BowlDisplay, // Добавили BowlDisplay
+  FlaskDisplay,
+  BowlDisplay,
   GeneralDisplay,
   AccessoryDisplay,
   AdapterDisplay,
@@ -33,12 +33,9 @@ import ProductImages from '@/components/ProductDetails/ProductImages';
 import ProductInfo from '@/components/ProductDetails/ProductInfo';
 import RecentlyViewed from '@/components/ProductDetails/RecentlyViewed';
 
-// Новый хук для получения вариантов продукта (того же бренда, вкуса, но разных весов)
-import { useMemo } from 'react';
-import { useProducts } from '@/hooks/useProducts';
-
+// Оптимизированный хук для вариантов (убран brandId, так как он не поддерживается; для оптимизации можно добавить фильтр в useProducts на уровне API)
 const useProductVariants = (product: Product | undefined): ProductVariant[] => {
-  const { data: allProducts } = useProducts({}); // Получаем все продукты (можно оптимизировать фильтром по бренду)
+  const { data: allProducts } = useProducts({}); // Оставлено без фильтра, так как brandId не поддерживается; для оптимизации обновите хук useProducts, чтобы он принимал brandId или brandSlug
 
   return useMemo(() => {
     if (!product || !allProducts || product.categories?.product_type !== 'tobacco') return [];
@@ -46,7 +43,6 @@ const useProductVariants = (product: Product | undefined): ProductVariant[] => {
     const currentFlavor = product.specific ? JSON.parse(product.specific).flavor_type : null;
     if (!currentFlavor) return [];
 
-    // Фильтруем продукты: тот же бренд, вкус, но другой вес, активные
     const variants = allProducts.filter(p =>
       p.brand_id === product.brand_id &&
       p.specific && JSON.parse(p.specific).flavor_type === currentFlavor &&
@@ -54,7 +50,6 @@ const useProductVariants = (product: Product | undefined): ProductVariant[] => {
       p.is_active
     );
 
-    // Группируем по весу (чтобы избежать дубликатов)
     const uniqueVariants = variants.reduce((acc, p) => {
       if (!acc.find(v => v.weight === p.weight)) acc.push(p);
       return acc;
@@ -64,57 +59,52 @@ const useProductVariants = (product: Product | undefined): ProductVariant[] => {
   }, [product, allProducts]);
 };
 
-const ProductDetail = () => {
+const ProductDetail = memo(function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { data: product, isLoading, error } = useProduct(slug || '');
   const { data: images } = useProductImages(product?.id || '');
 
-  // Получаем варианты продукта (другие продукты того же бренда и вкуса)
   const productVariants = useProductVariants(product);
 
-  // Новое: состояние для выбранного варианта (из product.variants)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
-  // При загрузке продукта устанавливаем первый вариант или базовый
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
       setSelectedVariant(product.variants[0]);
     } else {
-      setSelectedVariant(null); // Базовый продукт
+      setSelectedVariant(null);
     }
   }, [product]);
 
-  // Функция для выбора варианта
-  const handleVariantSelect = (variant: ProductVariant | null) => {
+  const handleVariantSelect = useCallback((variant: ProductVariant | null) => {
     setSelectedVariant(variant);
-  };
+  }, []);
 
-  // Прокрутка в верх при изменении slug (переходе к новому товару)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // Добавляем товар в недавно просмотренные при загрузке
   useEffect(() => {
     if (product?.slug) {
       const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-      const updated = [product.slug, ...stored.filter(s => s !== product.slug)].slice(0, 10); // Храним до 10 товаров
+      const updated = [product.slug, ...stored.filter(s => s !== product.slug)].slice(0, 10);
       localStorage.setItem('recentlyViewed', JSON.stringify(updated));
     }
   }, [product?.slug]);
 
-  let specific: any = {}; // Можно оставить any для specific, так как это JSON-строка, или типизировать отдельно
-  try {
-    specific = product?.specific ? JSON.parse(product.specific) : {};
-  } catch (error) {
-    console.error('Ошибка парсинга specific:', error);
-    specific = {};
-  }
+  const specific = useMemo(() => {
+    try {
+      return product?.specific ? JSON.parse(product.specific) : {};
+    } catch (error) {
+      console.error('Ошибка парсинга specific:', error);
+      return {};
+    }
+  }, [product?.specific]);
 
-  const renderColor = () => {
-    const isColorProduct = ['hookah', 'vape', 'mouthpiece', 'flask', 'bowl'].includes(product?.categories?.product_type); // Добавили 'bowl'
+  const renderColor = useCallback(() => {
+    const isColorProduct = ['hookah', 'vape', 'mouthpiece', 'flask', 'bowl'].includes(product?.categories?.product_type);
     if (!isColorProduct || !product?.color) return null;
 
     return (
@@ -140,7 +130,50 @@ const ProductDetail = () => {
         </div>
       </motion.div>
     );
-  };
+  }, [product?.categories?.product_type, product?.color, product?.has_multiple_colors]);
+
+  const renderSpecificDetails = useCallback(() => {
+    const productType = product?.categories?.product_type;
+
+    switch (productType) {
+      case 'tobacco':
+        return <TobaccoDisplay specific={specific} />;
+      case 'hookah':
+        return <HookahDisplay specific={specific} />;
+      case 'coal':
+        return <CoalDisplay specific={specific} />;
+      case 'flask':
+        return <FlaskDisplay specific={specific} />;
+      case 'bowl':
+        return <BowlDisplay specific={specific} />;
+      case 'accessory':
+        return <AccessoryDisplay specific={specific} />;
+      case 'adapter':
+        return <AdapterDisplay specific={specific} />;
+      case 'charger':
+        return <ChargerDisplay specific={specific} />;
+      case 'hose':
+        return <HoseDisplay specific={specific} />;
+      case 'liquid':
+        return <LiquidDisplay specific={specific} />;
+      case 'mouthpiece':
+        return <MouthpieceDisplay specific={specific} />;
+      case 'stand':
+        return <StandDisplay specific={specific} />;
+      case 'tool':
+        return <ToolDisplay specific={specific} />;
+      case 'vape':
+        return <VapeDisplay specific={specific} />;
+      case 'electronic':
+        return <ElectronicalDisplay specific={specific} />;
+      case 'general':
+        return <GeneralDisplay specific={specific} />;
+      case 'other':
+        return <GeneralDisplay specific={specific} />;
+      default:
+        return null;
+    }
+  }, [product?.categories?.product_type, specific]);
 
   if (isLoading) {
     return (
@@ -181,49 +214,6 @@ const ProductDetail = () => {
     );
   }
 
-  const renderSpecificDetails = () => {
-    const productType = product.categories?.product_type;
-
-    switch (productType) {
-      case 'tobacco':
-        return <TobaccoDisplay specific={specific} />;
-      case 'hookah':
-        return <HookahDisplay specific={specific} />;
-      case 'coal':
-        return <CoalDisplay specific={specific} />;
-      case 'flask':
-        return <FlaskDisplay specific={specific} />; // Используем FlaskDisplay для колб
-      case 'bowl':
-        return <BowlDisplay specific={specific} />; // Используем BowlDisplay для чаш
-      case 'accessory':
-        return <AccessoryDisplay specific={specific} />;
-      case 'adapter':
-        return <AdapterDisplay specific={specific} />;
-      case 'charger':
-        return <ChargerDisplay specific={specific} />;
-      case 'hose':
-        return <HoseDisplay specific={specific} />;
-      case 'liquid':
-        return <LiquidDisplay specific={specific} />;
-      case 'mouthpiece':
-        return <MouthpieceDisplay specific={specific} />;
-      case 'stand':
-        return <StandDisplay specific={specific} />;
-      case 'tool':
-        return <ToolDisplay specific={specific} />;
-      case 'vape':
-        return <VapeDisplay specific={specific} />;
-      case 'electronic':
-        return <ElectronicalDisplay specific={specific} />;
-      case 'general':
-        return <GeneralDisplay specific={specific} />;
-      case 'other':
-        return <GeneralDisplay specific={specific} />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
@@ -241,7 +231,7 @@ const ProductDetail = () => {
             images={images || []}
             productName={product.name}
             selectedVariant={selectedVariant}
-            productVariants={product?.variants || []} // Передаем варианты продукта
+            productVariants={product?.variants || []}
           />
 
           <ProductInfo
@@ -249,7 +239,7 @@ const ProductDetail = () => {
             specific={specific}
             renderColor={renderColor}
             renderSpecificDetails={renderSpecificDetails}
-            productVariants={product?.variants || []} // Передаем варианты из продукта
+            productVariants={product?.variants || []}
             selectedVariant={selectedVariant}
             onVariantSelect={handleVariantSelect}
           />
@@ -259,6 +249,6 @@ const ProductDetail = () => {
       </motion.main>
     </div>
   );
-};
+});
 
 export default ProductDetail;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo, useCallback } from 'react'; // Добавлены memo, useMemo, useCallback
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -23,7 +23,7 @@ interface FiltersSidebarProps {
     clearAllFilters: () => void;
     categorySlug: string;
     productType: string;
-    currentProductType: string | undefined;
+    currentProductType: string | undefined; // Исправлено: добавлено undefined
     categoryCounts: Record<string, number> | undefined;
     electronicCount: number;
     tobaccoCount: number;
@@ -58,7 +58,7 @@ interface FiltersSidebarProps {
     setIsPriceOpen: (open: boolean) => void;
 }
 
-export default function FiltersSidebar({
+const FiltersSidebar = memo(function FiltersSidebar({
     filtersCollapsed,
     setFiltersCollapsed,
     hasFilters,
@@ -87,7 +87,6 @@ export default function FiltersSidebar({
     setShowAllFlavors,
     showAllColors,
     setShowAllColors,
-    // Новые пропсы (убрал weights)
     isCategoriesOpen,
     setIsCategoriesOpen,
     isFlavorsOpen,
@@ -102,25 +101,33 @@ export default function FiltersSidebar({
     const { data: categories } = useCategories();
     const mainCategories = categories?.filter(c => !c.parent_id) || [];
 
-    // Исправлено: всегда показывать все mainCategories, независимо от productType
+    // Мемоизировано: всегда показывать все mainCategories, независимо от productType
     const categoriesToShow = useMemo(() => {
-        return mainCategories; // Все главные категории
+        return mainCategories;
     }, [mainCategories]);
 
-    const displayedFlavors = showAllFlavors ? uniqueFlavors : uniqueFlavors.slice(0, 6);
-    const displayedColors = showAllColors ? uniqueColors : uniqueColors.slice(0, 6);
+    // Мемоизировано: отображаемые вкусы и цвета для предотвращения перевычислений
+    const displayedFlavors = useMemo(() => showAllFlavors ? uniqueFlavors : uniqueFlavors.slice(0, 6), [uniqueFlavors, showAllFlavors]);
+    const displayedColors = useMemo(() => showAllColors ? uniqueColors : uniqueColors.slice(0, 6), [uniqueColors, showAllColors]);
+
+    // Мемоизированные обработчики для предотвращения пересоздания функций
+    const handleCategoriesToggle = useCallback(() => setIsCategoriesOpen(!isCategoriesOpen), [isCategoriesOpen, setIsCategoriesOpen]);
+    const handleFlavorsToggle = useCallback(() => setIsFlavorsOpen(!isFlavorsOpen), [isFlavorsOpen, setIsFlavorsOpen]);
+    const handleColorsToggle = useCallback(() => setIsColorsOpen(!isColorsOpen), [isColorsOpen, setIsColorsOpen]);
+    const handleBrandsToggle = useCallback(() => setIsBrandsOpen(!isBrandsOpen), [isBrandsOpen, setIsBrandsOpen]);
+    const handlePriceToggle = useCallback(() => setIsPriceOpen(!isPriceOpen), [isPriceOpen, setIsPriceOpen]);
 
     return (
         <aside className="lg:w-64 flex-shrink-0 block">
             <Button
                 variant="outline"
                 size="icon"
-                className="absolute -right-4 top-6 z-10 bg-card border border-border rounded-full shadow-md md:hidden"
+                className="absolute -right-4 top-6 z-10 bg-card border border-border rounded-full shadow-md md:hidden transition-transform duration-300"
                 onClick={() => setFiltersCollapsed(!filtersCollapsed)}
             >
-                <ChevronLeft className={`h-4 w-4 transition-transform ${filtersCollapsed ? 'rotate-180' : ''}`} />
+                <ChevronLeft className={`h-4 w-4 transition-transform duration-300 ${filtersCollapsed ? 'rotate-180' : ''}`} />
             </Button>
-            <div className={`bg-card rounded-2xl p-6 border border-border sticky top-24 transition-transform duration-300 ${filtersCollapsed ? '-translate-x-56 md:translate-x-0' : ''}`}>
+            <div className={`bg-card rounded-2xl p-6 border border-border sticky top-24 transition-transform duration-800 ${filtersCollapsed ? 'max-md:hidden md:-translate-x-56' : ''}`}>
                 <h2 className="font-display text-xl font-bold mb-4 uppercase">Фильтры</h2>
 
                 {hasFilters && (
@@ -134,7 +141,7 @@ export default function FiltersSidebar({
                     <Button
                         variant="ghost"
                         className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                        onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                        onClick={handleCategoriesToggle}
                     >
                         Категории
                         {isCategoriesOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -149,7 +156,6 @@ export default function FiltersSidebar({
                                 {cat.name} ({categoryCounts?.[cat.id] || 0})
                             </Link>
                         ))}
-                        {/* Убраны manual links, так как все категории теперь в categoriesToShow */}
                     </div>
                 </div>
 
@@ -159,7 +165,7 @@ export default function FiltersSidebar({
                         <Button
                             variant="ghost"
                             className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                            onClick={() => setIsFlavorsOpen(!isFlavorsOpen)}
+                            onClick={handleFlavorsToggle}
                         >
                             Вкусы табака
                             {isFlavorsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -186,7 +192,7 @@ export default function FiltersSidebar({
                         <Button
                             variant="ghost"
                             className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                            onClick={() => setIsFlavorsOpen(!isFlavorsOpen)}
+                            onClick={handleFlavorsToggle}
                         >
                             Вкусы жидкостей
                             {isFlavorsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -213,7 +219,7 @@ export default function FiltersSidebar({
                         <Button
                             variant="ghost"
                             className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                            onClick={() => setIsColorsOpen(!isColorsOpen)}
+                            onClick={handleColorsToggle}
                         >
                             Цвета {currentProductType === 'hookah' ? 'кальяна' : 'чаш'}
                             {isColorsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -239,7 +245,7 @@ export default function FiltersSidebar({
                     <Button
                         variant="ghost"
                         className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                        onClick={() => setIsBrandsOpen(!isBrandsOpen)}
+                        onClick={handleBrandsToggle}
                     >
                         Бренды
                         {isBrandsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -264,7 +270,7 @@ export default function FiltersSidebar({
                     <Button
                         variant="ghost"
                         className="w-full justify-between p-1 h-auto font-semibold mb-3"
-                        onClick={() => setIsPriceOpen(!isPriceOpen)}
+                        onClick={handlePriceToggle}
                     >
                         Цена
                         {isPriceOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -283,4 +289,6 @@ export default function FiltersSidebar({
             </div>
         </aside>
     );
-}
+});
+
+export default FiltersSidebar;

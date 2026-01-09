@@ -1,3 +1,4 @@
+// Index.tsx (исправленный с корректными ссылками для навигации в каталог)
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
@@ -121,7 +122,7 @@ const Index = () => {
                 transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
               >
                 <Link
-                  to={`/catalog?category=hookahs&brand=${encodeURIComponent(brand.slug)}`}  // Используем brand.slug вместо brand.name
+                  to={`/catalog?category=hookahs&brand=${encodeURIComponent(brand.slug)}`}  // Оставлено как есть, поскольку 'hookahs' - это category slug
                   className="px-4 py-2 bg-muted rounded-lg text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   {brand.name}
@@ -153,7 +154,7 @@ const Index = () => {
                 transition={{ duration: 0.3, delay: 0.8 + index * 0.05 }}
               >
                 <Link
-                  to={`/catalog?category=tobacco&brand=${encodeURIComponent(brand.slug)}`}  // Изменено на category=tobacco для корректного совпадения с category.slug в базе данных
+                  to={`/catalog?product_type=tobacco&brand=${encodeURIComponent(brand.slug)}`}  // Исправлено: изменено с category=tobacco на product_type=tobacco для корректного совпадения с логикой CategoryGrid и Catalog.tsx (tobacco - это product_type, а не category slug)
                   className="px-4 py-2 bg-muted rounded-lg text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   {brand.name}

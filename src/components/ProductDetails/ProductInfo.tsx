@@ -1,12 +1,11 @@
-
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert'; // Добавлен Alert для красивого отображения метки
-import { Info } from 'lucide-react'; // Иконка для метки
-
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 import { Product, ProductVariant } from '@/hooks/useProducts';
+import { memo, useMemo, useCallback } from 'react'; // Добавлены импорты
 
 interface ProductInfoProps {
     product: Product;
@@ -18,7 +17,7 @@ interface ProductInfoProps {
     onVariantSelect: (variant: ProductVariant | null) => void;
 }
 
-export default function ProductInfo({
+const ProductInfo = memo(function ProductInfo({
     product,
     specific,
     renderColor,
@@ -27,17 +26,28 @@ export default function ProductInfo({
     selectedVariant,
     onVariantSelect,
 }: ProductInfoProps) {
-    // Текущие данные: если выбран вариант, используем его данные, иначе данные продукта
-    const currentPrice = selectedVariant?.price || product.price;
-    const currentCompareAtPrice = selectedVariant?.compare_at_price;
-    const currentStock = selectedVariant?.stock_quantity || product.stock_quantity;
-    const currentSku = selectedVariant?.sku || product.sku;
-    const currentWeight = selectedVariant?.weight || product.weight;
+    // Мемоизированные вычисления для текущих данных
+    const currentData = useMemo(() => ({
+        price: selectedVariant?.price || product.price,
+        compareAtPrice: selectedVariant?.compare_at_price,
+        stock: selectedVariant?.stock_quantity || product.stock_quantity,
+        sku: selectedVariant?.sku || product.sku,
+        weight: selectedVariant?.weight || product.weight,
+    }), [selectedVariant, product]);
 
-    const hasDiscount = currentCompareAtPrice && currentPrice < currentCompareAtPrice;
-    const discountPercent = hasDiscount
-        ? Math.round((1 - currentPrice / currentCompareAtPrice!) * 100)
-        : 0;
+    // Мемоизированные вычисления скидки
+    const discountData = useMemo(() => {
+        const hasDiscount = currentData.compareAtPrice && currentData.price < currentData.compareAtPrice;
+        const discountPercent = hasDiscount
+            ? Math.round((1 - currentData.price / currentData.compareAtPrice!) * 100)
+            : 0;
+        return { hasDiscount, discountPercent };
+    }, [currentData.price, currentData.compareAtPrice]);
+
+    // Мемоизированная функция выбора варианта
+    const handleVariantSelect = useCallback((variant: ProductVariant | null) => {
+        onVariantSelect(variant);
+    }, [onVariantSelect]);
 
     return (
         <motion.div
@@ -46,7 +56,6 @@ export default function ProductInfo({
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
         >
-
             {/* Name */}
             <motion.h1
                 className="font-display text-xl md:text-2xl font-bold"
@@ -64,9 +73,9 @@ export default function ProductInfo({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
             >
-                {hasDiscount && (
+                {discountData.hasDiscount && (
                     <Badge className="bg-destructive text-destructive-foreground">
-                        -{discountPercent}%
+                        -{discountData.discountPercent}%
                     </Badge>
                 )}
                 {product.is_featured && (
@@ -75,12 +84,11 @@ export default function ProductInfo({
                     </Badge>
                 )}
                 <Badge
-                    variant={currentStock > 0 ? 'default' : 'secondary'}
+                    variant={currentData.stock > 0 ? 'default' : 'secondary'}
                 >
-                    {currentStock > 0 ? 'В наличии' : 'Нет'}
+                    {currentData.stock > 0 ? 'В наличии' : 'Нет'}
                 </Badge>
             </motion.div>
-
 
             <Separator />
 
@@ -91,12 +99,11 @@ export default function ProductInfo({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.7 }}
             >
-
-                {currentWeight && (
-                    <div className="flex items-center gap-2">
+                {currentData.weight && (
+                    <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
                         <span className="text-muted-foreground">Вес/Объём/Количество:</span>
                         <span className="font-medium">
-                            {currentWeight} {product.weight_unit === 'g' ? 'г' : product.weight_unit === 'ml' ? 'мл' : 'шт'}
+                            {currentData.weight} {product.weight_unit === 'g' ? 'г' : product.weight_unit === 'ml' ? 'мл' : 'шт'}
                         </span>
                     </div>
                 )}
@@ -112,10 +119,10 @@ export default function ProductInfo({
                         <span className="ml-2 font-medium">{product.strength}</span>
                     </div>
                 )}
-                {currentSku && (
+                {currentData.sku && (
                     <div>
                         <span className="text-muted-foreground">Артикул:</span>
-                        <span className="ml-2 font-medium">{currentSku}</span>
+                        <span className="ml-2 font-medium">{currentData.sku}</span>
                     </div>
                 )}
             </motion.div>
@@ -132,7 +139,7 @@ export default function ProductInfo({
                                 key={variant.id}
                                 variant={selectedVariant?.id === variant.id ? 'default' : 'outline'}
                                 size="sm"
-                                onClick={() => onVariantSelect(variant)}
+                                onClick={() => handleVariantSelect(variant)}
                             >
                                 {variant.weight}г
                             </Button>
@@ -144,14 +151,15 @@ export default function ProductInfo({
             {/* Price */}
             <motion.div className="flex items-center gap-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }}>
                 <span className="font-display text-2xl md:text-3xl font-bold">
-                    {currentPrice} ₽
+                    {currentData.price} ₽
                 </span>
-                {currentCompareAtPrice && (
+                {currentData.compareAtPrice && (
                     <span className="text-lg text-muted-foreground line-through">
-                        {currentCompareAtPrice} ₽
+                        {currentData.compareAtPrice} ₽
                     </span>
                 )}
             </motion.div>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -198,9 +206,8 @@ export default function ProductInfo({
                     </p>
                 </motion.div>
             )}
-
-
-
         </motion.div>
     );
-}
+});
+
+export default ProductInfo;

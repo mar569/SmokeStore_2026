@@ -1,3 +1,4 @@
+// Catalog.tsx (исправленный с добавлением фильтра по productType в filteredProducts)
 import { useState, useMemo, useEffect } from 'react'; // Добавлен useEffect
 import SearchModal from '@/components/SearchModal';
 import { useSearchParams, Link } from 'react-router-dom';
@@ -24,7 +25,6 @@ const Catalog = () => {
 
   // Состояния для гармошки
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
-  const [isWeightsOpen, setIsWeightsOpen] = useState(true);
   const [isFlavorsOpen, setIsFlavorsOpen] = useState(true);
   const [isColorsOpen, setIsColorsOpen] = useState(true);
   const [isBrandsOpen, setIsBrandsOpen] = useState(true);
@@ -118,7 +118,11 @@ const Catalog = () => {
       if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand_id || '')) return false;
       // Фильтр по цене: product.price уже минимальная для товаров с вариантами
       if (product.price < priceRange[0] || product.price > priceRange[1]) return false;
-      // Убрано: дублирующий фильтр по productType, поскольку useProducts уже фильтрует по нему
+      // Добавлено: фильтр по productType для корректной фильтрации товаров по типу (например, tobacco или electronic)
+      if (currentProductType) {
+        const cat = categories?.find(c => c.id === product.category_id);
+        if (cat?.product_type !== currentProductType) return false;
+      }
       // Фильтр по вкусам (для табака и электронных сигарет): учитываем варианты (если у них есть specific)
       if ((currentProductType === 'tobacco' || currentProductType === 'electronic') && selectedFlavors.length > 0) {
         let hasMatchingFlavor = false;
@@ -165,7 +169,7 @@ const Catalog = () => {
     }
 
     return filtered;
-  }, [products, searchQuery, selectedBrands, priceRange, sortBy, currentProductType, selectedFlavors, selectedColors]); // Убрано productType из зависимостей, поскольку фильтр убран
+  }, [products, searchQuery, selectedBrands, priceRange, sortBy, currentProductType, selectedFlavors, selectedColors, categories]); // Добавлено categories в зависимости
 
   const mainCategories = categories?.filter(c => !c.parent_id) || [];
 

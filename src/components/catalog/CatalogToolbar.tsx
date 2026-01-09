@@ -1,4 +1,4 @@
-
+import { memo } from 'react'; // Добавлен memo
 import { Button } from '@/components/ui/button';
 import { Filter, Grid, List } from 'lucide-react';
 
@@ -13,7 +13,7 @@ interface CatalogToolbarProps {
     setViewMode: (mode: 'grid' | 'list') => void;
 }
 
-export default function CatalogToolbar({
+const CatalogToolbar = memo(function CatalogToolbar({
     filtersCollapsed,
     setFiltersCollapsed,
     sortBy,
@@ -62,4 +62,6 @@ export default function CatalogToolbar({
             </div>
         </div>
     );
-}
+});
+
+export default CatalogToolbar;

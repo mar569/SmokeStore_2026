@@ -28,7 +28,7 @@ const PromoCarousel = () => {
       title: 'БОЛЬШОЙ ВЫБОР ТАБАКОВ И КАЛЬЯНОВ',
       subtitle: '',
       buttonText: 'Смотреть каталог',
-      buttonLink: '/catalog?category=hookahs',
+      buttonLink: '/catalog?category=tobacco',
       bgColor: 'bg-primary',
     },
   ];
