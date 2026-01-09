@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import { AuthProvider } from "./lib/auth";
@@ -11,6 +11,7 @@ import PageLayout from "./components/PageLayout";
 import Jop from "./pages/Jop";
 import TermsOfUse from "./pages/TermsOfUse";
 import { HelmetProvider } from "react-helmet-async";
+import AgeVerificationModal from "./components/AgeVerificationModal"; // Импортируйте ваш компонент модалки
 
 // Ленивая загрузка остальных страниц
 const Catalog = lazy(() => import("./pages/Catalog"));
@@ -22,6 +23,42 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 
 const queryClient = new QueryClient();
 
+// Внутренний компонент для использования useLocation
+const AppContent = () => {
+  const location = useLocation();
+  const isVerified = localStorage.getItem('age_verified') === 'true';
+  const isOnAgreementPage = location.pathname === '/agreement';
+
+  return (
+    <>
+      {/* Модалка рендерится только если возраст не подтверждён И пользователь НЕ на странице соглашения */}
+      {!isVerified && !isOnAgreementPage && <AgeVerificationModal />}
+
+      <PageLayout>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/jop" element={<Jop />} />
+            <Route path="/promotions" element={<Promotions />} />
+            <Route path="/promotions/:id" element={<PromotionDetail />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
+            <Route path="/agreement" element={<TermsOfUse />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </PageLayout>
+    </>
+  );
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -30,27 +67,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <PageLayout>
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center min-h-screen">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                }
-              >
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/catalog" element={<Catalog />} />
-                  <Route path="/contacts" element={<Contacts />} />
-                  <Route path="/jop" element={<Jop />} />
-                  <Route path="/promotions" element={<Promotions />} />
-                  <Route path="/promotions/:id" element={<PromotionDetail />} />
-                  <Route path="/product/:slug" element={<ProductDetail />} />
-                  <Route path="/agreement" element={<TermsOfUse />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </PageLayout>
+            <AppContent />
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

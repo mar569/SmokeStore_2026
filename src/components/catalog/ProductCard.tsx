@@ -34,16 +34,10 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
     const currentCompareAtPrice = selectedVariant ? selectedVariant.compare_at_price : product.compare_at_price;
     const currentStock = selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity;
 
-    // Расчет скидок: проверяем все варианты и базовый продукт
-    const allPrices = product.variants && product.variants.length > 0
-        ? product.variants.map(v => ({ price: v.price, compareAtPrice: v.compare_at_price }))
-        : [{ price: product.price, compareAtPrice: product.compare_at_price }];
-    const discountPercents = allPrices
-        .map(p => p.compareAtPrice && p.price < p.compareAtPrice ? Math.round((1 - p.price / p.compareAtPrice) * 100) : 0)
-        .filter(p => p > 0);
-    const maxDiscountPercent = discountPercents.length > 0 ? Math.max(...discountPercents) : 0;
-    const hasAnyDiscount = maxDiscountPercent > 0;
-    const hasDiscount = currentCompareAtPrice && currentPrice < currentCompareAtPrice; // Для зачеркнутой цены только текущего
+    // Проверка скидки: только если у первого варианта (или товара, если нет вариантов) есть скидка
+    const hasDiscount = product.variants && product.variants.length > 0
+        ? (product.variants[0].compare_at_price && product.variants[0].price < product.variants[0].compare_at_price)
+        : (product.compare_at_price && product.price < product.compare_at_price);
 
     if (viewMode === 'list') {
         return (
@@ -113,9 +107,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                                 {currentCompareAtPrice} ₽
                             </span>
                         )}
-                        {hasAnyDiscount && (
+                        {hasDiscount && (
                             <Badge className="bg-destructive text-destructive-foreground text-xs">
-                                -{maxDiscountPercent}%
+                                Акция
                             </Badge>
                         )}
                     </div>
@@ -148,9 +142,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                         </div>
                     )}
 
-                    {hasAnyDiscount && (
+                    {hasDiscount && (
                         <Badge className="absolute top-2 left-2 bg-destructive text-destructive-foreground">
-                            -{maxDiscountPercent}%
+                            Акция
                         </Badge>
                     )}
 
@@ -161,13 +155,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                     )}
                 </div>
 
-                <div className="p-4">
-                    {product.brands && (
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                            {product.brands.name}
-                        </p>
-                    )}
-
+                <div className="p-2 mb-2 mt-2">
                     <h3 className="font-medium text-sm line-clamp-2 mb-2">{product.name}</h3>
 
                     {product.variants && product.variants.length > 0 ? (
@@ -206,9 +194,16 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span className="font-bold">{currentPrice} ₽</span>
-                            {hasDiscount && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                    {currentCompareAtPrice} ₽
+
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {currentStock > 0 ? (
+                                <span className="text-xs text-muted-foreground">
+                                    В наличии
+                                </span>
+                            ) : (
+                                <span className="text-xs text-muted-foreground">
+                                    Нет в наличии
                                 </span>
                             )}
                         </div>
