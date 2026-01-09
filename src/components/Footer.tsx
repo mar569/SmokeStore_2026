@@ -47,8 +47,8 @@ const Footer = () => {
               <Link to="/promotions" className="block hover:text-primary transition-colors">
                 Акции
               </Link>
-              <Link to="/stores" className="block hover:text-primary transition-colors">
-                Магазин
+              <Link to="/jop" className="block hover:text-primary transition-colors">
+                Работа
               </Link>
               <Link to="/contacts" className="block hover:text-primary transition-colors">
                 Контакты

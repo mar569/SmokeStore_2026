@@ -1,14 +1,39 @@
+# Robots.txt для Smoke Store
+# https://smoke-store-shlisselburg.ru/
+
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+User-agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
 
-User-agent: Twitterbot
+User-agent: Mail.RU_Bot
 Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+Disallow: /api/
 
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*.xml$
+
+# Crawl-delay для снижения нагрузки на сервер
+User-agent: *
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://smoke-store-shlisselburg.ru/sitemap.xml
+
+# Host directive for Yandex
+Host: https://smoke-store-shlisselburg.ru

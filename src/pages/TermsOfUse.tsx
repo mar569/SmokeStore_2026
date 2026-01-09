@@ -1,9 +1,15 @@
-// pages/TermsOfUse.tsx (исправленный: все <p> с text-xs, удалены пункты о регистрации и аккаунтах)
+
+import SEO from '@/components/SEO';
 import { Link } from 'react-router-dom';
 
 const TermsOfUse = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Пользовательское соглашение"
+        description="Пользовательское соглашение сайта Smoke Store. Правила использования, права и обязанности пользователей."
+        canonical="/agreement"
+      />
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <h1 className="font-display text-3xl font-bold mb-8 uppercase">Пользовательское соглашение</h1>
 

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/components/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 const PromotionDetail = () => {
     const { id } = useParams();
@@ -77,6 +78,12 @@ const PromotionDetail = () => {
 
     return (
         <div className="min-h-screen bg-background">
+            <SEO
+                title={promotion ? `${promotion.name} — акция Smoke Store` : "Акция не найдена"}
+                description={promotion ? promotion.description : "Описание акции недоступно."}
+                canonical={`/promotions/${id}`}
+                image={promotion?.image_url || undefined}
+            />
 
             <main className="container mx-auto px-4 py-8">
                 <motion.div

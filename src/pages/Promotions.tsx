@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/components/integrations/supabase/client';
+import SEO from '@/components/SEO';
 
 const Promotions = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -52,6 +53,11 @@ const Promotions = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Акции и спецпредложения"
+        description="Текущие акции и спецпредложения магазина Smoke Store в Шлиссельбурге. Скидки на табак, кальяны и аксессуары."
+        canonical="/promotions"
+      />
       <main className="container mx-auto px-4 py-8">
         <motion.h1
           className="font-display text-3xl md:text-4xl font-bold mb-8 uppercase text-center"

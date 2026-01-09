@@ -10,6 +10,7 @@ import { useFilters } from '@/hooks/useFilters';
 import FiltersSidebar from '@/components/catalog/FiltersSidebar';
 import CatalogToolbar from '@/components/catalog/CatalogToolbar';
 import ProductGrid from '@/components/catalog/ProductGrid';
+import SEO from '@/components/SEO';
 
 type SortOption = 'name' | 'price_asc' | 'price_desc';
 
@@ -198,6 +199,11 @@ const Catalog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Каталог товаров — табак, кальяны, вейпы"
+        description="Каталог товаров магазина Smoke Store в Шлиссельбурге. Табак для кальяна, кальяны, электронные сигареты, аксессуары и многое другое."
+        canonical="/catalog"
+      />
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">

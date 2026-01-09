@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#FF4500" />
-    <!-- Добавлено: theme-color для брендинга (оранжевый, как в дизайне) -->
+    <meta name="theme-color" content="#FFF" />
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
@@ -27,7 +26,7 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://smoke-store-shlisselburg.ru/" />
 
-    <!-- Open Graph Meta Tags (добавлено для социальных сетей) -->
+    <!-- Open Graph Meta Tags -->
     <meta
       property="og:title"
       content="Магазин Smoke Store в Шлиссельбурге — купить табак, кальян и электронные сигареты"
@@ -53,7 +52,7 @@
     <meta name="geo.position" content="59.9449;31.0337" />
     <meta name="ICBM" content="59.9449, 31.0337" />
 
-    <!-- Schema.org LocalBusiness (обновлено с aggregateRating, если есть отзывы) -->
+    <!-- Schema.org LocalBusiness -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -108,37 +107,6 @@
           "@type": "AggregateRating",
           "ratingValue": "4.8",
           "reviewCount": "150"
-        },
-        "hasOfferCatalog": {
-          "@type": "OfferCatalog",
-          "name": "Каталог товаров",
-          "itemListElement": [
-            {
-              "@type": "OfferCatalog",
-              "name": "Кальяны",
-              "itemListElement": []
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Табак для кальяна",
-              "itemListElement": []
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Электронные сигареты",
-              "itemListElement": []
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Вейпы",
-              "itemListElement": []
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Аксессуары",
-              "itemListElement": []
-            }
-          ]
         }
       }
     </script>
@@ -162,6 +130,7 @@
       }
     </script>
 
+    <!-- Schema.org BreadcrumbList -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -194,7 +163,7 @@
           {
             "@type": "ListItem",
             "position": 5,
-            "name": "Вакансии",
+            "name": "Работа",
             "item": "https://smoke-store-shlisselburg.ru/jop"
           },
           {
@@ -207,13 +176,12 @@
       }
     </script>
 
-    <!-- Yandex Verification (добавлено, если у вас есть код верификации) -->
+    <!-- Yandex Verification -->
     <meta name="yandex-verification" content="ваш-код-верификации" />
-    <!-- Замените на реальный код -->
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root"><!--app-html--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

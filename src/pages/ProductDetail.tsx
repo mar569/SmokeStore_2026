@@ -32,6 +32,7 @@ import Breadcrumbs from '@/components/ProductDetails/Breadcrumbs';
 import ProductImages from '@/components/ProductDetails/ProductImages';
 import ProductInfo from '@/components/ProductDetails/ProductInfo';
 import RecentlyViewed from '@/components/ProductDetails/RecentlyViewed';
+import SEO from '@/components/SEO';
 
 // Оптимизированный хук для вариантов (убран brandId, так как он не поддерживается; для оптимизации можно добавить фильтр в useProducts на уровне API)
 const useProductVariants = (product: Product | undefined): ProductVariant[] => {
@@ -216,6 +217,12 @@ const ProductDetail = memo(function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={product ? `${product.name} — купить в Smoke Store` : "Товар не найден"}
+        description={product ? `Купить ${product.name} в магазине Smoke Store в Шлиссельбурге. ${product.description || 'Описание товара недоступно.'}` : "Описание товара недоступно."}
+        canonical={`/product/${slug}`}
+        image={images?.[0]?.url || undefined}
+      />
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       <motion.main

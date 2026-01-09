@@ -1,13 +1,24 @@
 import { useState } from 'react';
 
 import SearchModal from '@/components/SearchModal';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Loader2 } from 'lucide-react'; // Добавлено Loader2
+import SEO from '@/components/SEO';
 
 const Contacts = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true); // Состояние загрузки карты
+
+  const handleMapLoad = () => {
+    setIsMapLoading(false); // Устанавливаем false при загрузке карты
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Контакты — адрес, телефон, карта"
+        description="Контакты магазина Smoke Store в Шлиссельбурге. Телефон, email, Telegram, адрес в ТЦ Акватория и карта проезда."
+        canonical="/contacts"
+      />
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       <main className="container mx-auto px-4 py-8">
@@ -87,9 +98,16 @@ const Contacts = () => {
           </div>
         </div>
 
-
         <div className="mt-8 bg-card rounded-2xl p-2 border border-border">
-          <div className="aspect-video bg-muted rounded-xl overflow-hidden">
+          <div className="aspect-video bg-muted rounded-xl overflow-hidden relative">
+            {isMapLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-xl">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Карта загружается...</p>
+                </div>
+              </div>
+            )}
             <iframe
               src="https://yandex.ru/map-widget/v1/?ll=31.032922%2C59.945907&mode=poi&poi%5Bpoint%5D=31.032692%2C59.945786&poi%5Buri%5D=ymapsbm1%3A%2F%2Forg%3Foid%3D226903573250&z=19.59"
               width="100%"
@@ -99,8 +117,8 @@ const Contacts = () => {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Карта магазина"
-            >
-            </iframe>
+              onLoad={handleMapLoad}
+            />
           </div>
         </div>
       </main>

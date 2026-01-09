@@ -12,6 +12,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { useCategoryCounts } from '@/hooks/useCategoryFilters';
 import { useProducts } from '@/hooks/useProducts';
 import { useBrands } from '@/hooks/useBrands'; // Добавлено для получения брендов
+import SEO from '@/components/SEO';
 
 const Index = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -50,6 +51,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background container ">
+      <SEO
+        title="Главная — купить табак, кальян и электронные сигареты"
+        description="Магазин Smoke Store в Шлиссельбурге. Большой выбор табака для кальяна, кальянов любой модели, электронных одноразовых сигарет, аксессуаров и подов. Купите у нас — выгодные цены!"
+        canonical="/"
+      />
       <AgeVerificationModal />
 
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
